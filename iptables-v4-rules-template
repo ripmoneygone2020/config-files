@@ -1,0 +1,62 @@
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT DROP [0:0]
+
+## INPUT CHAIN BEGIN
+-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+#### MISC HARDENING RULES
+-A INPUT --fragment -j DROP
+-A INPUT -m state --state INVALID -j DROP
+-A INPUT -m state ! --state NEW -j DROP
+
+##### DROP ANY NEW INCOMING CONNS WITHOUT THE SYN FLAG SET
+-A INPUT -p tcp ! --syn -j DROP
+
+##### DROP ANY NEW INCOMING CONNS WITH ALL TCP FLAGS SET
+-A INPUT -p tcp --tcp-flags ALL ALL -j DROP
+
+##### RATE LIMITING
+-A INPUT -p tcp -m limit --limit 1/s --limit-burst 60 -j TCP_SERVICES_RATE_LIMITED
+-A INPUT -p udp -j UDP_SERVICES
+
+### INPUT CHAIN END
+
+## OUTPUT CHAIN BEGIN
+-A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+-A OUTPUT -m state ! --state NEW -j DROP
+
+#### EDNS/HTTP/HTTPS
+-A OUTPUT -o eth0 -p tcp -d 1.1.1.1,1.0.0.1 --dport 853 -j ACCEPT
+-A OUTPUT -o eth0 -p tcp --dport 443 -j ACCEPT
+-A OUTPUT -o eth0 -p tcp --dport 80 -j ACCEPT
+
+#### NTP/DNS
+-A OUTPUT -o eth0 -p udp --dport 123 -j ACCEPT
+-A OUTPUT -o eth0 -p udp --dport 53 -j ACCEPT
+
+### OUTPUT CHAIN END
+
+## FORWARD CHAIN BEGIN
+-A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+### FORWARD CHAIN END
+
+### TCP SERVICES BEGIN
+
+#### OPENVPN
+-A TCP_SERVICES_RATE_LIMITED -i eth0 -p tcp --dport 443 -j ACCEPT 
+
+#### SSH
+-A TCP_SERVICES_RATE_LIMITED -i eth0 -p tcp --dport 22 -j ACCEPT 
+
+#### DROP ALL ELSE
+-A TCP_SERVICES_RATE_LIMITED -j DROP
+
+### TCP SERVICES END
+
+### UDP SERVICES BEGIN
+### UDP SERVICES END
+
+COMMIT

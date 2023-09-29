@@ -1,0 +1,58 @@
+## Set the local listening address
+local 172.233.219.34
+
+## Set the local listening port
+port 443
+
+## Set the connection protocol
+proto tcp
+
+## Configure instance to be routed vs policy based
+dev tun
+
+## Configure net topology
+topology subnet
+
+## Configure root jail and unpriviledged mode
+chroot /etc/openvpn/server/jail
+tmp-dir tmp
+
+## Configure VPN Tunnel IP Subnet
+server 172.9.0.0 255.255.255.0
+
+## Configure Servers PING/KeepAlive Settings
+ping 10
+ping-restart 60
+
+## Keep records of IP Address associations
+ifconfig-pool-persist /etc/openvpn/server/log/ipp.txt
+
+## Set PKI paths
+ca "/etc/openvpn/server/pki/cacerts/CA.crt"
+cert "/etc/openvpn/server/pki/certs/SERVER.crt"
+key "/etc/openvpn/server/pki/private/SERVER.key"
+
+## Set Diffie Hellman parameter
+dh "/etc/openvpn/server/pki/dhparam/dh2048.pem"
+
+## Set TLS-Auth
+tls-auth "/etc/openvpn/server/pki/tls-auth/ta.key" 1
+
+## Set Cipher And Auth Options
+cipher AES-256-GCM
+auth SHA512
+
+## Configure OpenVPN Instance To Run under Reduced Priviledges
+user openvpn
+group openvpn
+
+persist-key
+persist-tun
+
+## Configure Status & Logging Paths & Verbosity
+status /etc/openvpn/server/log/server-status.log
+log /etc/openvpn/server/log/server.log
+log-append /etc/openvpn/server/log/server.log
+
+## Set Log Verbosity
+verb 6

@@ -1,0 +1,36 @@
+server:
+    num-threads: 1
+
+    interface: 127.0.0.53@53
+    # outgoing-interface: X.X.X.X
+
+    do-ip4: yes
+    do-ip6: no
+
+    do-udp: yes
+    do-tcp: yes
+
+    qname-minimisation: yes
+
+    tls-upstream: yes
+    tls-cert-bundle: "/etc/pki/tls/certs/ca-bundle.crt"
+    tls-use-sni: yes
+
+    hide-identity: yes
+    hide-version: yes
+
+    username: unbound
+
+    access-control: 127.0.0.0/8 allow
+
+forward-zone:
+    name: "."
+
+    forward-first: no
+    forward-tls-upstream: yes
+
+    forward-addr: 1.1.1.1@853#cloudflare-dns.com
+    forward-addr: 1.0.0.1@853#cloudflare-dns.com
+
+remote-control:
+    control-enable: no
